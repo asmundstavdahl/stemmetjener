@@ -2,6 +2,7 @@ import os
 import sys
 from openai import OpenAI
 from openai.types.audio.transcription import Transcription
+from make_filename_for_text import make_filename_for_text
 
 # Konfigurasjonsinnstillinger
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -41,6 +42,8 @@ def save_transcription_to_obsidian(transcription, note_title):
     with open(note_path, "w") as file:
         file.write(note_content)
 
+    return note_path
+
 
 def main(file_path):
     # Sjekk om filen eksisterer
@@ -54,12 +57,15 @@ def main(file_path):
     # Lag et tittel for notatet (f.eks. basert på filnavnet)
     note_title = os.path.splitext(os.path.basename(file_path))[0]
 
-    # Lagre transkripsjonen i Obsidian Vault
-    save_transcription_to_obsidian(transcription, note_title)
+    note_description = make_filename_for_text(transcription)
 
-    print(
-        f"Transkripsjonen har blitt lagret i {OBSIDIAN_VAULT_PATH} som {note_title}.md"
-    )
+    if note_description != "":
+        note_title = f"{note_title} - {note_description}"
+
+    # Lagre transkripsjonen i Obsidian Vault
+    note_path = save_transcription_to_obsidian(transcription, note_title)
+
+    print(note_path)
 
 
 if __name__ == "__main__":
